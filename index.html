@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+        <style>
+
+            body{background-color: background; margin: 0;padding: 0;};
+        </style>
+
+    </head>
+    <body>
+
+
+        <canvas id="canvas" style="margin-left:  30%">
+        </canvas>
+
+    </body>
+
+    <script type="text/javascript">
+
+        
+        var sizeImages=100;
+        var padingImages=100;
+        
+        var base_image = new Image();
+        base_image.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Gluehlampe_01_KMJ.jpg/200px-Gluehlampe_01_KMJ.jpg";
+
+        var base_image_true = new Image();
+        base_image_true.src = "http://www.alarmygniezno.pl/attachments/Image/zarowka.jpg?template=generic";
+
+
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext('2d');
+
+        var offX = canvas.offsetLeft;
+        var offY = canvas.offsetTop;
+
+        canvas.width = screen.width;
+        canvas.height = screen.height;
+
+
+        var obj; // zwraca pozycje kliknietego elementu 
+
+        canvas.addEventListener("click", function (event) {
+
+            obj = new Object();
+            obj.x = event.pageX - offX;
+            obj.y = event.pageY - offY;
+   
+                  
+           var x= parseInt(obj.x/padingImages);
+           var y= parseInt(obj.y/padingImages);
+            
+         if(y ==1)
+            
+            
+            try {
+    
+                
+    
+} catch (e) {
+    
+}
+
+            
+            
+            
+        });
+
+        var diTotal = 8;
+        var doTotal = 8;
+
+        var diRecords;  // nie wiem do czego to ale potrzebne
+        var doRecords;  // nie wiem do czego to ale potrzebne
+
+
+
+        var imgageRender = {
+
+            di: [],
+            do: [],
+
+            pomI: 0,
+            pomO: 0,
+
+            DI: function (serverResponse) {
+
+
+                diRecords = serverResponse.getElementsByTagName("DI");
+                for (var i = 0; i < diTotal; i++) {
+                    var diStatus = parseInt(diRecords[i].getElementsByTagName("VALUE")[0].childNodes[0].nodeValue);
+
+
+                    this.di.push(diStatus);
+
+                    if (diStatus === 0)
+                        ctx.drawImage(base_image, this.pomI, 0, sizeImages, sizeImages);
+                    if (diStatus === 1)
+                        ctx.drawImage(base_image_true, this.pomI, 0, sizeImages, sizeImages);
+
+                    this.pomI += sizeImages;
+
+                }
+
+                this.pomI = 0;
+            },
+            DO: function (serverResponse1) {
+
+                doRecords = serverResponse1.getElementsByTagName("DO");
+                for (var i = 0; i < doTotal; i++) {
+
+                    var doStatus = parseInt(doRecords[i].getElementsByTagName("VALUE")[0].childNodes[0].nodeValue);
+
+                    this.do.push(doStatus);
+
+                    if (doStatus === 0)
+                        ctx.drawImage(base_image, this.pomO, padingImages, sizeImages, sizeImages);
+                    if (doStatus === 1)
+                        ctx.drawImage(base_image_true, this.pomO, padingImages, sizeImages, sizeImages);
+                    this.pomO += sizeImages;
+                }
+
+
+                this.pomO = 0;
+            }
+        };
+    
+       var doSet = {
+            szPostData: "",
+            setSet: function () {
+
+                for (var i = 0; i < doTotal; i++) {
+                    this.szPostData += "DO" + i + "=0";
+
+                    if (i < doTotal - 1)
+                        this.szPostData += "&";
+                }
+                return this.szPostData;
+            }
+        };
+        
+
+    var setDo= function(whithDo) {
+    
+            doSet.setSet(whithDo);
+    
+            $.ajax({
+            type: "POST",
+            url: "digitaloutput/all/value",
+            data: doSet.sszPostData,
+            success: function () {
+                alert(doSet.szPostData);
+            }
+        });
+    
+    
+    }
+  
+        
+        
+        setInterval(function(){ $.ajax({
+                url: "digitalinput/all/value",
+                success: function (data, textStatus, jqXHR) {
+
+                    if (data.documentElement.attributes[0].nodeValue == "OK") {
+
+                        imgageRender.DI(data);
+
+                    } else {
+                        alert("Serwer nie odpowiada")
+                    }
+                }
+            });
+
+            $.ajax({
+                url: "digitaloutput/all/value",
+                success: function (data, textStatus, jqXHR) {
+
+                    if (data.documentElement.attributes[0].nodeValue == "OK") {
+
+                        imgageRender.DO(data);
+
+                    } else {
+                        alert("Serwer nie odpowiada")
+                    }
+                }
+            });
+ }, 3000);
+      
+
+
+
+
+
+
+
+
+    </script>
+</html>
